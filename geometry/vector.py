@@ -43,7 +43,7 @@ class Vector:
 
     def angle_between(self, other_vector: Vector) -> float:
         return math.acos((self.x * other_vector.x + self.y * other_vector.y) /
-               (self.length * other_vector.length))
+                         (self.length * other_vector.length))
 
     @staticmethod
     def zero():

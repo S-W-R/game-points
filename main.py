@@ -8,7 +8,7 @@ from gamestate import GameState
 from geometry.point import Point
 
 if __name__ == "__main__":
-    game_state_test = GameState(size=Point(10,10))
+    game_state_test = GameState(size=Point(10, 10))
     App = QApplication(sys.argv)
     window = MainWindow(game_state_test)
     sys.exit(App.exec())

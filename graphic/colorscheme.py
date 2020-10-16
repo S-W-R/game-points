@@ -13,5 +13,3 @@ class ColorScheme:
 
     def __getitem__(self, item: CellTypes) -> CellGraphic:
         return self._scheme[item]
-
-
