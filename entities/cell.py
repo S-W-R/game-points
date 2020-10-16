@@ -11,6 +11,7 @@ class Cell:
         self._position = position
         self._cell_type = cell_type
         self._owner = owner
+        self._graphic_owner = owner
 
     @staticmethod
     def create_empty_cell(position: Point) -> Cell:
@@ -29,9 +30,17 @@ class Cell:
         self._cell_type = value
 
     @property
-    def owner(self) -> Player:
+    def real_owner(self) -> Player:
         return self._owner
 
-    @owner.setter
-    def owner(self, value: Player) -> NoReturn:
+    @real_owner.setter
+    def real_owner(self, value: Player) -> NoReturn:
         self._owner = value
+
+    @property
+    def graphic_owner(self) -> Player:
+        return self._graphic_owner
+
+    @graphic_owner.setter
+    def graphic_owner(self, value: Player) -> NoReturn:
+        self._graphic_owner = value

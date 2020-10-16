@@ -41,6 +41,9 @@ class Matrix(Generic[T]):
     def in_borders(self, x: int, y: int) -> bool:
         return 0 <= x < self.width and 0 <= y < self.height
 
+    def __contains__(self, item: Point) -> bool:
+        return self.in_borders(item.x, item.y)
+
     def __getitem__(self, key: Point) -> T:
         if not self.in_borders(key.x, key.y):
             raise IndexError()

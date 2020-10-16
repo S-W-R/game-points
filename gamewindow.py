@@ -81,7 +81,7 @@ class GameWindow(QWidget):
                 rect_center = cell_start + QPoint(int(cell_width) // 2,
                                                   int(cell_height) // 2)
                 cell = game_field[game_position]
-                scheme = cell.owner.color_scheme[cell.cell_type]
+                scheme = cell.graphic_owner.color_scheme[cell.cell_type]
                 x_size = int(cell_width * scheme.size / 2)
                 y_size = int(cell_height * scheme.size / 2)
                 painter.setBrush(scheme.color)
