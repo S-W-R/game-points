@@ -25,19 +25,16 @@ class MainWindow(QWidget):
         self.__init_window(game_state)
 
     def __init_window(self, game_state: GameState):
-
         layout = QHBoxLayout(self)
         self.game_widget = GameWindow(self.game_state)
         layout.addWidget(self.game_widget)
-        layout.addWidget(QPushButton('PyQt5 button1'))
+        layout.addWidget(QPushButton('Place for UI widget'))
         layout.setStretch(0, 10)
         layout.setStretch(1, 0)
         self.setLayout(layout)
         self.setWindowTitle("Points")
-        #self.setMinimumSize(GameWindow.min_size())
+        # self.setMinimumSize(GameWindow.min_size())
         self.show()
-
-
 
     def paintEvent(self, event):
         self.update()

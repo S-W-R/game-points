@@ -46,16 +46,10 @@ class GameWindow(QWidget):
 
     def mousePressEvent(self, mouse_event):
         pos = mouse_event.pos()
-        # self.draw_game_state()
-        print(pos)
-        print(self.to_game_coordinates(pos))
         self.game_state.make_turn(self.to_game_coordinates(pos))
 
     def mouseReleaseEvent(self, mouse_event):
         pass
-        '''cursor = QtGui.QCursor()
-        print(cursor.pos())
-        '''
 
     def minimumSizeHint(self):
         return self.min_size()
