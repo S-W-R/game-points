@@ -9,7 +9,7 @@ from graphic.colorscheme import ColorScheme
 SIZE_EMPTY = 0.3
 SIZE_ACTIVE = 0.5
 SIZE_INACTIVE = 0.46
-SIZE_CAPTURED = 0.35
+SIZE_CAPTURED = 0.33
 
 
 class SchemePreset(Enum):
@@ -28,7 +28,7 @@ class SchemePreset(Enum):
          CellTypes.active_point: CellGraphic(SIZE_ACTIVE,
                                              QColor(255, 0, 0, 255)),
          CellTypes.inactive_point: CellGraphic(SIZE_INACTIVE,
-                                               QColor(210, 30, 30, 200)),
+                                               QColor(180, 30, 30, 200)),
          CellTypes.captured_cell: CellGraphic(SIZE_CAPTURED,
                                               QColor(200, 100, 100, 80))})
     blue = ColorScheme(
@@ -37,6 +37,6 @@ class SchemePreset(Enum):
          CellTypes.active_point: CellGraphic(SIZE_ACTIVE,
                                              QColor(0, 0, 255, 255)),
          CellTypes.inactive_point: CellGraphic(SIZE_INACTIVE,
-                                               QColor(30, 30, 210, 200)),
+                                               QColor(30, 30, 180, 200)),
          CellTypes.captured_cell: CellGraphic(SIZE_CAPTURED,
                                               QColor(100, 100, 200, 80))})
