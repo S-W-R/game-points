@@ -1,42 +1,25 @@
-from enum import Enum
-
+from __future__ import annotations
+from typing import Iterable, Tuple, List
+import json
 from PyQt5.QtGui import QColor
 
-from entities.cell import CellTypes
+from entities.celltype import CellType
 from graphic.cellgraphic import CellGraphic
 from graphic.colorscheme import ColorScheme
-
-SIZE_EMPTY = 0.3
-SIZE_ACTIVE = 0.5
-SIZE_INACTIVE = 0.46
-SIZE_CAPTURED = 0.33
+from graphic.scheme_parser import SchemeParser
+from graphic.sizecontsants import SizeConstants
+from graphic.graphicpaths import MAIN_SCHEME_PATH
 
 
-class SchemePreset(Enum):
-    empty = ColorScheme(
-        {CellTypes.empty: CellGraphic(SIZE_EMPTY,
-                                      QColor(255, 255, 255, 30)),
-         CellTypes.active_point: CellGraphic(SIZE_ACTIVE,
-                                             QColor(255, 255, 255, 50)),
-         CellTypes.inactive_point: CellGraphic(SIZE_INACTIVE,
-                                               QColor(200, 200, 200, 50)),
-         CellTypes.captured_cell: CellGraphic(SIZE_CAPTURED,
-                                              QColor(180, 180, 180, 80))})
-    red = ColorScheme(
-        {CellTypes.empty: CellGraphic(SIZE_EMPTY,
-                                      QColor(255, 0, 0, 30)),
-         CellTypes.active_point: CellGraphic(SIZE_ACTIVE,
-                                             QColor(255, 0, 0, 255)),
-         CellTypes.inactive_point: CellGraphic(SIZE_INACTIVE,
-                                               QColor(180, 30, 30, 200)),
-         CellTypes.captured_cell: CellGraphic(SIZE_CAPTURED,
-                                              QColor(200, 100, 100, 80))})
-    blue = ColorScheme(
-        {CellTypes.empty: CellGraphic(SIZE_EMPTY,
-                                      QColor(0, 0, 255, 30)),
-         CellTypes.active_point: CellGraphic(SIZE_ACTIVE,
-                                             QColor(0, 0, 255, 255)),
-         CellTypes.inactive_point: CellGraphic(SIZE_INACTIVE,
-                                               QColor(30, 30, 180, 200)),
-         CellTypes.captured_cell: CellGraphic(SIZE_CAPTURED,
-                                              QColor(100, 100, 200, 80))})
+class SchemePreset:
+    def __init__(self, size_constants: SizeConstants = SizeConstants()):
+        parser = SchemeParser(size_constants)
+        self._schemes = dict()
+        for i in parser.get_schemes(MAIN_SCHEME_PATH):
+            self._schemes[i.name] = i
+
+    def __getitem__(self, item: str) -> ColorScheme:
+        return self._schemes[item]
+
+    def __iter__(self) -> Iterable[ColorScheme]:
+        return self._schemes.values()

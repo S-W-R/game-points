@@ -2,19 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from PyQt5 import QtCore
 from PyQt5 import QtGui
-from PyQt5 import QtWidgets
-from PyQt5.Qt import Qt, QPointF
-from PyQt5.QtCore import QPoint, QSize
-from PyQt5.QtGui import QPainter, QTransform, QPixmap, QColor
-from PyQt5.QtWidgets import QMainWindow, QHBoxLayout, QPushButton, QWidget
+from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QWidget
 
-from gamewindow import GameWindow
-from geometry.point import Point
+from widgets.gamewidget import GameWindow
 
 if TYPE_CHECKING:
-    from gamestate import GameState
+    from core.gamestate import GameState
 
 
 class MainWindow(QWidget):

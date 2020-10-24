@@ -1,13 +1,14 @@
 from __future__ import annotations
-from typing import NoReturn
+from typing import NoReturn, TYPE_CHECKING
+from entities.celltype import CellType
 
-from entities.celltypes import CellTypes
-from entities.player import Player
-from geometry.point import Point
+if TYPE_CHECKING:
+    from geometry.point import Point
+    from entities.player import Player
 
 
 class Cell:
-    def __init__(self, position: Point, cell_type: CellTypes, owner: Player):
+    def __init__(self, position: Point, cell_type: CellType, owner: Player):
         self._position = position
         self._cell_type = cell_type
         self._owner = owner
@@ -15,18 +16,18 @@ class Cell:
 
     @staticmethod
     def create_empty_cell(position: Point) -> Cell:
-        return Cell(position, CellTypes.empty, Player.empty_player())
+        return Cell(position, CellType.empty, Player.empty_player())
 
     @property
     def position(self) -> Point:
         return self._position
 
     @property
-    def cell_type(self) -> CellTypes:
+    def cell_type(self) -> CellType:
         return self._cell_type
 
     @cell_type.setter
-    def cell_type(self, value: CellTypes) -> NoReturn:
+    def cell_type(self, value: CellType) -> NoReturn:
         self._cell_type = value
 
     @property

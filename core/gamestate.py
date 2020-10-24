@@ -4,7 +4,8 @@ from collections import deque
 from queue import Queue
 from typing import TYPE_CHECKING, NoReturn, Set, Iterable
 
-from entities.cell import Cell, CellTypes
+from entities.cell import Cell
+from entities.celltype import CellType
 from entities.player import Player
 from geometry.matrix import Matrix
 from geometry.point import Point
@@ -19,11 +20,11 @@ if TYPE_CHECKING:
 class GameState:
     NEAR_POINTS = [Point(1, 0), Point(-1, 0), Point(0, 1), Point(0, -1)]
 
-    def __init__(self, size: Point):
+    def __init__(self, size: Point, scheme_preset: SchemePreset):
         self._size = size
         self._game_field = self.__init_game_field(size)
-        player1 = Player(1, SchemePreset.red.value)
-        player2 = Player(2, SchemePreset.blue.value)
+        player1 = Player(1, scheme_preset['red'])
+        player2 = Player(2, scheme_preset['blue'])
         self._empty_player = Player.empty_player()
         self._players = [player1, player2]
         self._player_cycle = cycle([player1, player2])
@@ -95,7 +96,7 @@ class GameState:
         if position not in self.game_field:
             return False
         cell_type = self.game_field[position].cell_type
-        return cell_type == CellTypes.empty
+        return cell_type == CellType.empty
 
     def _get_near_position(self, position: Point) -> Iterable[Point]:
         x = position.x
@@ -120,27 +121,30 @@ class GameState:
     def _activate_cell(self, player: Player, cell: Cell):
         cell.real_owner = player
         cell.graphic_owner = player
-        cell.cell_type = CellTypes.active_point
+        cell.cell_type = CellType.active_point
 
     def _capture_points(self, player: Player, points: Iterable[Point]):
         for point in points:
             cell = self.game_field[point]
-            if (cell.cell_type == CellTypes.empty or
-                    cell.cell_type == CellTypes.captured_cell):
-                cell.cell_type = CellTypes.captured_cell
+            if (cell.cell_type == CellType.empty or
+                    cell.cell_type == CellType.captured_cell):
+                cell.cell_type = CellType.captured_cell
                 cell.real_owner = player
                 cell.graphic_owner = player
-            if (cell.cell_type == CellTypes.active_point or
-                    cell.cell_type == CellTypes.inactive_point):
-                cell.cell_type = CellTypes.inactive_point
+            if (cell.cell_type == CellType.active_point or
+                    cell.cell_type == CellType.inactive_point):
+                cell.cell_type = CellType.inactive_point
                 cell.real_owner = player
-            if (cell.cell_type == CellTypes.inactive_point and
+            if (cell.cell_type == CellType.inactive_point and
                     cell.graphic_owner == cell.real_owner):
-                cell.cell_type = CellTypes.active_point
+                cell.cell_type = CellType.active_point
 
     def _get_player_active_cells(self, player: Player) -> Iterable[Point]:
         for x in range(self.game_field.width):
             for y in range(self.game_field.height):
                 cell = self.game_field[Point(x, y)]
-                if cell.real_owner == player and cell.cell_type == CellTypes.active_point:
+                if cell.real_owner == player and cell.cell_type == CellType.active_point:
                     yield cell.position
+
+    def _get_player_score(self, player: Player):
+        pass

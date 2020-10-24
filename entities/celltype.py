@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 
-class CellTypes(Enum):
+class CellType(Enum):
     empty = auto()
     active_point = auto()
     inactive_point = auto()

@@ -2,18 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Tuple
 
-from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-from PyQt5.Qt import Qt, QPointF
+from PyQt5.Qt import Qt
 from PyQt5.QtCore import QPoint, QSize, QRect
-from PyQt5.QtGui import QPainter, QTransform, QPixmap, QColor
-from PyQt5.QtWidgets import QMainWindow, QHBoxLayout, QWidget
+from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtWidgets import QWidget
 
 from geometry.point import Point
 
 if TYPE_CHECKING:
-    from gamestate import GameState
+    from core.gamestate import GameState
 
 
 class GameWindow(QWidget):
@@ -94,8 +93,8 @@ class GameWindow(QWidget):
         return Point(x, y)
 
     def to_widget_coordinates(self, point: Point):
-        x = (self.width() // (self.game_state.width)) * point.x
-        y = (self.height() // (self.game_state.height)) * point.y
+        x = (self.width() // self.game_state.width) * point.x
+        y = (self.height() // self.game_state.height) * point.y
         return QPoint(x, y)
 
     def cell_size(self) -> Tuple[float, float]:

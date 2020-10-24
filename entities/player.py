@@ -1,5 +1,9 @@
+from __future__ import annotations
 from graphic.colorscheme import ColorScheme
+from graphic.scheme_parser import SchemeParser
 from graphic.schemepreset import SchemePreset
+from graphic.sizecontsants import SizeConstants
+from graphic.graphicpaths import EMPTY_SCHEME_PATH
 
 
 class Player:
@@ -13,7 +17,9 @@ class Player:
     @staticmethod
     def empty_player():
         if Player._empty_player is None:
-            Player._empty_player = Player(0, SchemePreset.empty.value)
+            parser = SchemeParser(SizeConstants())
+            empty_scheme = parser.get_scheme(EMPTY_SCHEME_PATH)
+            Player._empty_player = Player(0, empty_scheme)
         return Player._empty_player
 
     @property
