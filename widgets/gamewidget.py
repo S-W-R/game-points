@@ -25,7 +25,7 @@ class GameWindow(QWidget):
         self.game_state = game_state
         self.__init_graphic()
         self.setMinimumSize(
-            QSize(30 * game_state.width, 30 * game_state.height))
+            QSize(35 * game_state.width, 35 * game_state.height))
         # self.setGeometry(400, 400, 400, 400)
 
     def __init_graphic(self):
