@@ -1,10 +1,10 @@
 from __future__ import annotations
 from typing import NoReturn, TYPE_CHECKING
 from entities.celltype import CellType
+from entities.player import Player
 
 if TYPE_CHECKING:
     from geometry.point import Point
-    from entities.player import Player
 
 
 class Cell:

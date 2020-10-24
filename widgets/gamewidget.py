@@ -13,6 +13,7 @@ from geometry.point import Point
 
 if TYPE_CHECKING:
     from core.gamestate import GameState
+    from widgets.menuwidget import MenuWidget
 
 
 class GameWindow(QWidget):
@@ -24,7 +25,7 @@ class GameWindow(QWidget):
         self.game_state = game_state
         self.__init_graphic()
         self.setMinimumSize(
-            QSize(40 * game_state.width, 40 * game_state.height))
+            QSize(30 * game_state.width, 30 * game_state.height))
         # self.setGeometry(400, 400, 400, 400)
 
     def __init_graphic(self):
@@ -88,8 +89,8 @@ class GameWindow(QWidget):
                 painter.setBrush(Qt.NoBrush)
 
     def to_game_coordinates(self, pos: QPoint) -> Point:
-        x = pos.x() // (self.width() // (self.game_state.width))
-        y = pos.y() // (self.height() // (self.game_state.width))
+        x = pos.x() // (self.width() // self.game_state.width)
+        y = pos.y() // (self.height() // self.game_state.width)
         return Point(x, y)
 
     def to_widget_coordinates(self, point: Point):
