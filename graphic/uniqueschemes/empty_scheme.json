@@ -3,8 +3,8 @@
   "scheme": {
     "empty": {
       "size": {
-        "is_constant": true,
-        "size": "SIZE_EMPTY"
+        "is_constant": false,
+        "size": 0
       },
       "color": [
         255,

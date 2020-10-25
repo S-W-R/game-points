@@ -25,12 +25,12 @@ class GameWindow(QWidget):
         self.game_state = game_state
         self.__init_graphic()
         self.setMinimumSize(
-            QSize(35 * game_state.width, 35 * game_state.height))
+            QSize(25 * game_state.width, 25 * game_state.height))
         # self.setGeometry(400, 400, 400, 400)
 
     def __init_graphic(self):
         self.graphic_label = QtWidgets.QLabel(self)
-        # self.graphic_label.setAlignment(Qt.AlignAbsolute)
+        # self.graphic_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.show()
 
     @staticmethod
@@ -46,7 +46,7 @@ class GameWindow(QWidget):
 
     def mousePressEvent(self, mouse_event):
         pos = mouse_event.pos()
-        self.game_state.make_turn(self.to_game_coordinates(pos))
+        self.game_state.try_make_turn(self.to_game_coordinates(pos))
 
     def mouseReleaseEvent(self, mouse_event):
         pass
@@ -70,6 +70,15 @@ class GameWindow(QWidget):
         painter.setBrush(self.BACKGROUND_COLOR)
         painter.drawRect(rect)
         painter.setBrush(Qt.NoBrush)
+        cell_width, cell_height = self.cell_size()
+        for x in range(self.game_state.width):
+            cell_start = self.to_widget_coordinates(Point(x, 0))
+            line_x = cell_start + QPoint(int(cell_width) // 2, 0)
+            painter.drawLine(line_x, line_x + QPoint(0, self.height()))
+        for y in range(self.game_state.height):
+            cell_start = self.to_widget_coordinates(Point(0, y))
+            line_y = cell_start + QPoint(0, int(cell_height) // 2)
+            painter.drawLine(line_y, line_y + QPoint(self.width(), 0))
 
     def draw_game_field(self, painter: QPainter):
         cell_width, cell_height = self.cell_size()
@@ -90,7 +99,7 @@ class GameWindow(QWidget):
 
     def to_game_coordinates(self, pos: QPoint) -> Point:
         x = pos.x() // (self.width() // self.game_state.width)
-        y = pos.y() // (self.height() // self.game_state.width)
+        y = pos.y() // (self.height() // self.game_state.height)
         return Point(x, y)
 
     def to_widget_coordinates(self, point: Point):

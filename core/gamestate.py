@@ -92,13 +92,12 @@ class GameState:
     def width(self) -> int:
         return self._size.x
 
-    def make_turn(self, position: Point) -> NoReturn:
-        if not self.is_correct_turn(position):
-            return
+    def try_make_turn(self, position: Point) -> bool:
+        if not self.is_correct_turn(position, self._current_player):
+            return False
         cell = self._game_field[position]
         self._activate_cell(self._current_player, cell)
-        active_cells = set(
-            self._get_enemy_cells(self._current_player))  # type:  Set[Point]
+        active_cells = set(self._get_enemy_cells(self._current_player))
         free_cells = set()  # type:  Set[Point]
         surrounded_cells = set()  # type:  Set[Point]
         for potential_cell in active_cells:
@@ -126,12 +125,15 @@ class GameState:
                 free_cells |= current_group
         self._capture_points(self._current_player, surrounded_cells)
         self._current_player = self._get_next_player()
+        return True
 
-    def is_correct_turn(self, position: Point):
+    def is_correct_turn(self, position: Point, player: Player):
         if position not in self.game_field:
             return False
         cell_type = self.game_field[position].cell_type
-        return cell_type == CellType.empty
+        owner = Cell.real_owner
+        return (cell_type == CellType.empty or (
+                cell_type == CellType.captured_cell and owner == player))
 
     def get_player_score(self, player: Player) -> int:
         counter = 0
