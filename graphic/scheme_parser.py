@@ -17,18 +17,21 @@ class SchemeParser:
         with open(filename, mode='r', encoding='utf8') as json_data:
             data = json.load(json_data)
             name = data['name']
+            border_color = data['border_color']
             raw_scheme = data['scheme']
-            return self.__parse_color_scheme(name, raw_scheme)
+            return self.__parse_color_scheme(name, border_color, raw_scheme)
 
     def get_schemes(self, filename: str) -> Iterable[ColorScheme]:
         with open(filename, mode='r', encoding='utf8') as json_data:
             data = json.load(json_data)
-        for i in data:
-            name = i['name']
-            raw_scheme = i['scheme']
-            yield self.__parse_color_scheme(name, raw_scheme)
+            for i in data:
+                name = i['name']
+                border_color = i['border_color']
+                raw_scheme = i['scheme']
+                yield self.__parse_color_scheme(name, border_color, raw_scheme)
 
-    def __parse_color_scheme(self, name: str, raw_scheme) -> ColorScheme:
+    def __parse_color_scheme(self, name: str, border_color: str,
+                             raw_scheme) -> ColorScheme:
         scheme = dict()
         scheme[CellType.empty] = self.__parse_cell_graphic(
             raw_scheme['empty'])
@@ -38,7 +41,7 @@ class SchemeParser:
             raw_scheme['active'])
         scheme[CellType.inactive_point] = self.__parse_cell_graphic(
             raw_scheme['inactive'])
-        return ColorScheme(name, scheme)
+        return ColorScheme(name, border_color, scheme)
 
     def __parse_cell_graphic(self, raw_cell_scheme) -> CellGraphic:
         return CellGraphic(

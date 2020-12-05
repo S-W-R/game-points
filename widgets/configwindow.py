@@ -9,8 +9,11 @@ from PyQt5.QtWidgets import QPushButton, QWidget, QComboBox, QLabel, \
 
 import const.rules as rules
 from core.gamestate import GameState
+from entities.player import Player
 from geometry.point import Point
 from graphic.schemepreset import SchemePreset
+from widgets.config.playeredit import PlayerEditor
+from widgets.config.playersconfig import PlayersConfig
 from widgets.config.valueslider import ValueSlider
 from widgets.mainwindow import MainWindow
 
@@ -34,6 +37,7 @@ class ConfigWindow(QWidget):
         self.__init_initial_position_combobox()
         self.__init_score_rule_combobox()
         self.__init_start_button()
+        schemes = SchemePreset()
         layout = QGridLayout(self)
         layout.addWidget(QLabel(text='score rule:'), 0, 0)
         layout.addWidget(self._score_rule_combobox, 0, 1)
@@ -43,9 +47,11 @@ class ConfigWindow(QWidget):
         self.width_slider = ValueSlider(10, 50)
         layout.addWidget(self.width_slider, 2, 1)
         layout.addWidget(QLabel(text='Height:'), 3, 0)
-        self.height_slider = ValueSlider(10, 40)
+        self.height_slider = ValueSlider(10, 30)
         layout.addWidget(self.height_slider, 3, 1)
-        layout.addWidget(self.start_button, 4, 0, 1, 2)
+        self.players_config = PlayersConfig(2, len(schemes), schemes)
+        layout.addWidget(self.players_config, 4, 0, 1, 2)
+        layout.addWidget(self.start_button, 5, 0, 1, 2)
         layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
         self.setWindowTitle("points game config")
@@ -55,15 +61,18 @@ class ConfigWindow(QWidget):
         self._score_rule_combobox = QComboBox()
         for i in rules.ScoreRule:
             self._score_rule_combobox.addItem(i.value.name, i)
+        return self._score_rule_combobox
 
     def __init_initial_position_combobox(self):
         self._initial_position_combobox = QComboBox()
         for i in rules.InitialPosition:
             self._initial_position_combobox.addItem(i.value.name, i)
+        return self._initial_position_combobox
 
     def __init_start_button(self):
         self.start_button = QPushButton(text='start game')
         self.start_button.clicked.connect(self.start_game)
+        return self.start_button
 
     def __star_game_window(self, game_state: GameState):
         self.main_window = MainWindow(game_state)
@@ -71,16 +80,17 @@ class ConfigWindow(QWidget):
         self.close()
 
     def start_game(self):
-        score_rule = rules.RULE_FROM_NAME[
+        score_rule = rules.SCORE_RULE_FROM_NAME[
             self._score_rule_combobox.currentText()]
-        initial_pos = rules.RULE_FROM_NAME[
+        initial_pos = rules.INITIAL_POSITION_FROM_RULE[
             self._initial_position_combobox.currentText()]
         width = self.width_slider.value
         height = self.height_slider.value
+        players = self.players_config.get_players()
         game_state = GameState(size=Point(width, height),
-                               scheme_preset=SchemePreset(),
                                score_rule=score_rule,
-                               initial_position=initial_pos)
+                               initial_position=initial_pos,
+                               players=players)
         self.__star_game_window(game_state)
 
     def paintEvent(self, event):

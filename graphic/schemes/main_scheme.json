@@ -1,6 +1,7 @@
 [
   {
     "name": "red",
+    "border_color": "red",
     "scheme": {
       "empty": {
         "size": {
@@ -54,6 +55,7 @@
   },
   {
     "name": "blue",
+    "border_color": "blue",
     "scheme": {
       "empty": {
         "size": {
@@ -107,6 +109,7 @@
   },
   {
     "name": "green",
+    "border_color": "green",
     "scheme": {
       "empty": {
         "size": {
@@ -160,6 +163,7 @@
   },
   {
     "name": "yellow",
+    "border_color": "yellow",
     "scheme": {
       "empty": {
         "size": {

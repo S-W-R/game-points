@@ -6,7 +6,7 @@ class Rule:
         self._name = name
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
 
@@ -21,10 +21,11 @@ class InitialPosition(Enum):
     double_cross = Rule('double cross')
 
 
-RULE_FROM_NAME = {
-    'russian': ScoreRule.russian,
-    'polish': ScoreRule.polish,
-    'empty': InitialPosition.empty,
-    'cross': InitialPosition.cross,
-    'double cross': InitialPosition.double_cross
-}
+class CurrentState(Enum):
+    player_playing = auto()
+    ai_playing = auto()
+    ended = auto()
+
+
+SCORE_RULE_FROM_NAME = {i.value.name: i for i in ScoreRule}
+INITIAL_POSITION_FROM_RULE = {i.value.name: i for i in InitialPosition}

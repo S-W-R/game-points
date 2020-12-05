@@ -1,17 +1,16 @@
 from __future__ import annotations
 
+import itertools
 from collections import deque
-from typing import TYPE_CHECKING, NoReturn, Set, Iterable
+from typing import TYPE_CHECKING, Set, Iterable, List, NoReturn
 
 import const.rules as rules
+from core.gamehelper import GameHelper
 from entities.cell import Cell
 from entities.celltype import CellType
 from entities.player import Player
 from geometry.matrix import Matrix
 from geometry.point import Point
-from graphic.schemepreset import SchemePreset
-
-import itertools
 
 if TYPE_CHECKING:
     pass
@@ -20,22 +19,24 @@ if TYPE_CHECKING:
 class GameState:
     NEAR_POINTS = [Point(1, 0), Point(-1, 0), Point(0, 1), Point(0, -1)]
 
-    def __init__(self, size: Point, scheme_preset: SchemePreset,
+    def __init__(self, size: Point,
                  score_rule: rules.ScoreRule,
-                 initial_position: rules.InitialPosition):
+                 initial_position: rules.InitialPosition,
+                 players: Iterable[Player]):
         self.__init_rules(score_rule, initial_position)
         self._size = size
-        player1 = Player(1, scheme_preset['red'])
-        player2 = Player(2, scheme_preset['blue'])
         self._empty_player = Player.empty_player()
-        self._players = [player1, player2]
-        self._player_cycle = itertools.cycle([player1, player2])
+        self._players = list(players)
+        self._player_cycle = itertools.cycle(self._players)
         self._current_player = self._get_next_player()
         self._game_field = self.__init_game_field(size)
         self.__apply_initial_position()
+        self._game_helper = GameHelper(self)
+        self._current_state = rules.CurrentState.player_playing
+        self._current_state = self._get_current_state()
 
     def __init_rules(self, score_rule: rules.ScoreRule,
-                     initial_position: rules.InitialPosition):
+                     initial_position: rules.InitialPosition) -> NoReturn:
         self.rule_score = score_rule
         self.rule_initial_position = initial_position
 
@@ -47,7 +48,7 @@ class GameState:
                 game_field[point] = Cell.create_empty_cell(point)
         return game_field
 
-    def __apply_initial_position(self):
+    def __apply_initial_position(self) -> NoReturn:
         first_player_pos = ()
         second_player_pos = ()
         central_pos = Point(0, 0)
@@ -81,6 +82,26 @@ class GameState:
         return self._game_field
 
     @property
+    def game_helper(self) -> GameHelper:
+        return self._game_helper
+
+    @property
+    def players(self) -> List[Player]:
+        return self._players
+
+    @property
+    def empty_player(self) -> Player:
+        return self._empty_player
+
+    @property
+    def current_player(self) -> Player:
+        return self.current_player
+
+    @property
+    def current_state(self) -> rules.CurrentState:
+        return self._current_state
+
+    @property
     def size(self) -> Point:
         return self._size
 
@@ -92,12 +113,52 @@ class GameState:
     def width(self) -> int:
         return self._size.x
 
-    def try_make_turn(self, position: Point) -> bool:
-        if not self.is_correct_turn(position, self._current_player):
+    def get_near_position(self, position: Point) -> Iterable[Point]:
+        for near_pos in self.NEAR_POINTS:
+            new_point = position + near_pos
+            if new_point in self.game_field:
+                yield new_point
+
+    def ai_make_turn(self):
+        player = self._current_player
+        controller = player.controller
+        position_to_move = controller.get_position(self, player)
+        self.make_turn(position=position_to_move, player=player)
+        self._update_turn_is_end()
+
+    def player_make_turn(self, position: Point):
+        if (self.try_make_turn(position, self._current_player) and
+                self._current_state == rules.CurrentState.player_playing):
+            self._update_turn_is_end()
+
+    def _update_turn_is_end(self):
+        for player in self._players:
+            player.score = self._get_player_score(player)
+        self._current_player = self._get_next_player()
+        self._current_state = self._get_current_state()
+
+    def _get_current_state(self):
+        if not self.game_helper.is_player_can_make_turn(self._current_player):
+            return rules.CurrentState.ended
+        else:
+            if self._current_player.controller.is_ai:
+                return rules.CurrentState.ai_playing
+            else:
+                return rules.CurrentState.player_playing
+
+    def try_make_turn(self, position: Point, player: Player) -> bool:
+        if not self.is_correct_turn(position, player):
             return False
+        self.make_turn(position, player)
+        return True
+
+    def make_turn(self, position: Point, player: Player) -> NoReturn:
+        if not self.is_correct_turn(position, player):
+            raise Exception('incorrect turn')
         cell = self._game_field[position]
-        self._activate_cell(self._current_player, cell)
-        active_cells = set(self._get_enemy_cells(self._current_player))
+        self._activate_cell(player, cell)
+        active_cells = set(
+            self.game_helper.get_enemy_positions(player))
         free_cells = set()  # type:  Set[Point]
         surrounded_cells = set()  # type:  Set[Point]
         for potential_cell in active_cells:
@@ -112,9 +173,9 @@ class GameState:
                 current_group.add(current)
                 if self._is_near_border(current):
                     surrounded = False
-                for near_pos in self._get_near_position(current):
+                for near_pos in self.get_near_position(current):
                     near_cell = self.game_field[near_pos]
-                    if (near_cell.real_owner == self._current_player or
+                    if (near_cell.real_owner == player or
                             near_pos in current_group):
                         continue
                     frontier.append(near_pos)
@@ -123,26 +184,25 @@ class GameState:
                 surrounded_cells |= current_group
             else:
                 free_cells |= current_group
-        self._capture_points(self._current_player, surrounded_cells)
-        self._current_player = self._get_next_player()
-        return True
+        self._capture_points(player, surrounded_cells)
 
     def is_correct_turn(self, position: Point, player: Player):
         if position not in self.game_field:
             return False
-        cell_type = self.game_field[position].cell_type
-        owner = Cell.real_owner
+        cell = self.game_field[position]
+        cell_type = cell.cell_type
+        owner = cell.real_owner
         return (cell_type == CellType.empty or (
                 cell_type == CellType.captured_cell and owner == player))
 
-    def get_player_score(self, player: Player) -> int:
+    def _get_player_score(self, player: Player) -> int:
         counter = 0
         if self.rule_score == rules.ScoreRule.russian:
-            for cell in self._get_player_cells(player):
+            for cell in self.game_helper.get_player_cells(player):
                 if cell.cell_type == CellType.inactive_point:
                     counter += 1
         elif self.rule_score == rules.ScoreRule.polish:
-            for cell in self._get_player_cells(player):
+            for cell in self.game_helper.get_player_cells(player):
                 if cell.cell_type == CellType.inactive_point:
                     counter += 2
                 elif cell.cell_type == CellType.captured_cell:
@@ -153,12 +213,6 @@ class GameState:
 
     def get_player_by_id(self, player_id: int) -> Player:
         return self._players[player_id - 1]
-
-    def _get_near_position(self, position: Point) -> Iterable[Point]:
-        for near_pos in self.NEAR_POINTS:
-            new_point = position + near_pos
-            if new_point in self.game_field:
-                yield new_point
 
     def _is_near_border(self, position: Point) -> bool:
         for near_pos in self.NEAR_POINTS:
@@ -190,22 +244,3 @@ class GameState:
             if (cell.cell_type == CellType.inactive_point and
                     cell.graphic_owner == cell.real_owner):
                 cell.cell_type = CellType.active_point
-
-    def _get_player_active_cells(self, player: Player) -> Iterable[Point]:
-        for cell in self._get_player_cells(player):
-            if cell.cell_type == CellType.active_point:
-                yield cell.position
-
-    def _get_enemy_cells(self, player: Player) -> Iterable[Point]:
-        for enemy in itertools.chain((self._empty_player,), self._players):
-            if enemy == player:
-                continue
-            for cell in self._get_player_cells(enemy):
-                yield cell.position
-
-    def _get_player_cells(self, player: Player) -> Iterable[Cell]:
-        for x in range(self.game_field.width):
-            for y in range(self.game_field.height):
-                cell = self.game_field[Point(x, y)]
-                if cell.real_owner == player:
-                    yield cell

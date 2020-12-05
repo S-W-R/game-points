@@ -1,5 +1,6 @@
 {
   "name": "empty",
+  "border_color": "black",
   "scheme": {
     "empty": {
       "size": {

@@ -27,8 +27,6 @@ class ValueSlider(QWidget):
         layout.setStretch(1, 0)
         self.setLayout(layout)
         self.setWindowTitle("Points")
-        self.show()
-        self.update()
 
     def __create_slider(self, min_value: int, max_value: int) -> QSlider:
         slider = QSlider(Qt.Horizontal)
@@ -38,7 +36,7 @@ class ValueSlider(QWidget):
         slider.setSingleStep(1)
         slider.setMinimum(min_value)
         slider.setMaximum(max_value)
-        slider.setMinimumWidth((max_value - min_value) * 15)
+        slider.setMinimumWidth((max_value - min_value) * 12)
         return slider
 
     def _update_value(self, value):

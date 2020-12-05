@@ -9,11 +9,12 @@ from PyQt5.QtCore import QPoint, QSize, QRect
 from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtWidgets import QWidget
 
+from const import rules
+from entities.celltype import CellType
 from geometry.point import Point
 
 if TYPE_CHECKING:
     from core.gamestate import GameState
-    from widgets.menuwidget import MenuWidget
 
 
 class GameWindow(QWidget):
@@ -45,8 +46,10 @@ class GameWindow(QWidget):
         self.update()
 
     def mousePressEvent(self, mouse_event):
+        if self.game_state.current_state != rules.CurrentState.player_playing:
+            return
         pos = mouse_event.pos()
-        self.game_state.try_make_turn(self.to_game_coordinates(pos))
+        self.game_state.player_make_turn(self.to_game_coordinates(pos))
 
     def mouseReleaseEvent(self, mouse_event):
         pass
@@ -86,10 +89,12 @@ class GameWindow(QWidget):
         for x in range(self.game_state.width):
             for y in range(self.game_state.height):
                 game_position = Point(x, y)
+                cell = game_field[game_position]
+                if cell.cell_type == CellType.empty:
+                    continue
                 cell_start = self.to_widget_coordinates(game_position)
                 rect_center = cell_start + QPoint(int(cell_width) // 2,
                                                   int(cell_height) // 2)
-                cell = game_field[game_position]
                 scheme = cell.graphic_owner.color_scheme[cell.cell_type]
                 x_size = int(cell_width * scheme.size / 2)
                 y_size = int(cell_height * scheme.size / 2)
