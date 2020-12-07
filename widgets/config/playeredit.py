@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QComboBox, QGridLayout, QLabel
 
-from const import rules, controllers
+from const import controllers
 from entities.player import Player
 from graphic.schemepreset import SchemePreset
 

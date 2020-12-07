@@ -23,22 +23,17 @@ class GameState:
                  score_rule: rules.ScoreRule,
                  initial_position: rules.InitialPosition,
                  players: Iterable[Player]):
-        self.__init_rules(score_rule, initial_position)
+        self.score_rule = score_rule.value.name
         self._size = size
         self._empty_player = Player.empty_player()
         self._players = list(players)
         self._player_cycle = itertools.cycle(self._players)
         self._current_player = self._get_next_player()
         self._game_field = self.__init_game_field(size)
-        self.__apply_initial_position()
+        self.__apply_initial_position(initial_position)
         self._game_helper = GameHelper(self)
         self._current_state = rules.CurrentState.player_playing
         self._current_state = self._get_current_state()
-
-    def __init_rules(self, score_rule: rules.ScoreRule,
-                     initial_position: rules.InitialPosition) -> NoReturn:
-        self.rule_score = score_rule
-        self.rule_initial_position = initial_position
 
     def __init_game_field(self, size: Point) -> Matrix[Cell]:
         game_field = Matrix.from_point(size)
@@ -48,19 +43,20 @@ class GameState:
                 game_field[point] = Cell.create_empty_cell(point)
         return game_field
 
-    def __apply_initial_position(self) -> NoReturn:
+    def __apply_initial_position(self,
+                                 initial_position: rules.InitialPosition):
         first_player_pos = ()
         second_player_pos = ()
         central_pos = Point(0, 0)
-        if self.rule_initial_position == rules.InitialPosition.empty:
+        if initial_position == rules.InitialPosition.empty:
             pass
-        elif self.rule_initial_position == rules.InitialPosition.cross:
+        elif initial_position == rules.InitialPosition.cross:
             if len(self._players) != 2:
                 raise AttributeError()
             first_player_pos = (Point(0, 0), Point(1, 1))
             second_player_pos = (Point(0, 1), Point(1, 0))
             central_pos = Point(self.width // 2 - 1, self.height // 2 - 1)
-        elif self.rule_initial_position == rules.InitialPosition.double_cross:
+        elif initial_position == rules.InitialPosition.double_cross:
             if len(self._players) != 2:
                 raise AttributeError()
             first_player_pos = (
@@ -197,11 +193,12 @@ class GameState:
 
     def _get_player_score(self, player: Player) -> int:
         counter = 0
-        if self.rule_score == rules.ScoreRule.russian:
+        score_rule = rules.SCORE_RULE_FROM_NAME[self.score_rule]
+        if score_rule == rules.ScoreRule.russian:
             for cell in self.game_helper.get_player_cells(player):
                 if cell.cell_type == CellType.inactive_point:
                     counter += 1
-        elif self.rule_score == rules.ScoreRule.polish:
+        elif score_rule == rules.ScoreRule.polish:
             for cell in self.game_helper.get_player_cells(player):
                 if cell.cell_type == CellType.inactive_point:
                     counter += 2

@@ -1,21 +1,20 @@
 from __future__ import annotations
-
 from typing import TYPE_CHECKING
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QWidget, QComboBox, QLabel, \
-    QGridLayout
+    QGridLayout, QMessageBox
 
 import const.rules as rules
+from const.paths import SAVE_PATH
 from core.gamestate import GameState
-from entities.player import Player
 from geometry.point import Point
 from graphic.schemepreset import SchemePreset
-from widgets.config.playeredit import PlayerEditor
 from widgets.config.playersconfig import PlayersConfig
 from widgets.config.valueslider import ValueSlider
 from widgets.mainwindow import MainWindow
+import pickle
 
 if TYPE_CHECKING:
     pass
@@ -34,9 +33,10 @@ class ConfigWindow(QWidget):
         self.game_height = 10
 
     def __init_window(self):
-        self.__init_initial_position_combobox()
-        self.__init_score_rule_combobox()
-        self.__init_start_button()
+        self._initial_position_combobox = \
+            self.__create_initial_position_combobox()
+        self._score_rule_combobox = self.__create_score_rule_combobox()
+
         schemes = SchemePreset()
         layout = QGridLayout(self)
         layout.addWidget(QLabel(text='score rule:'), 0, 0)
@@ -51,35 +51,58 @@ class ConfigWindow(QWidget):
         layout.addWidget(self.height_slider, 3, 1)
         self.players_config = PlayersConfig(2, len(schemes), schemes)
         layout.addWidget(self.players_config, 4, 0, 1, 2)
-        layout.addWidget(self.start_button, 5, 0, 1, 2)
+        start_button = self.__create_start_button()
+        load_button = self.__create_load_button()
+        layout.addWidget(start_button, 5, 0, 1, 2)
+        layout.addWidget(load_button, 6, 0, 1, 2)
         layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
         self.setWindowTitle("points game config")
         self.show()
 
-    def __init_score_rule_combobox(self):
-        self._score_rule_combobox = QComboBox()
+    def __create_score_rule_combobox(self):
+        score_rule_combobox = QComboBox()
         for i in rules.ScoreRule:
-            self._score_rule_combobox.addItem(i.value.name, i)
-        return self._score_rule_combobox
+            score_rule_combobox.addItem(i.value.name, i)
+        return score_rule_combobox
 
-    def __init_initial_position_combobox(self):
-        self._initial_position_combobox = QComboBox()
+    def __create_initial_position_combobox(self):
+        initial_position_combobox = QComboBox()
         for i in rules.InitialPosition:
-            self._initial_position_combobox.addItem(i.value.name, i)
-        return self._initial_position_combobox
+            initial_position_combobox.addItem(i.value.name, i)
+        return initial_position_combobox
 
-    def __init_start_button(self):
-        self.start_button = QPushButton(text='start game')
-        self.start_button.clicked.connect(self.start_game)
-        return self.start_button
+    def __create_start_button(self):
+        start_button = QPushButton(text='start game')
+        start_button.clicked.connect(self.__start_game)
+        return start_button
+
+    def __create_load_button(self):
+        load_button = QPushButton(text='load game')
+        load_button.clicked.connect(self.__load_game)
+        return load_button
 
     def __star_game_window(self, game_state: GameState):
         self.main_window = MainWindow(game_state)
         self.main_window.show()
         self.close()
 
-    def start_game(self):
+    def __load_game(self):
+        try:
+            with open(SAVE_PATH, 'rb') as file:
+                game_state = pickle.load(file)
+            QMessageBox.question(self,
+                                 'info',
+                                 'Loaded successfully',
+                                 QMessageBox.Yes)
+            self.__star_game_window(game_state)
+        except Exception as e:
+            QMessageBox.question(self,
+                                 'Error',
+                                 f'Unable to load: \n{e}',
+                                 QMessageBox.Yes)
+
+    def __start_game(self):
         score_rule = rules.SCORE_RULE_FROM_NAME[
             self._score_rule_combobox.currentText()]
         initial_pos = rules.INITIAL_POSITION_FROM_RULE[
