@@ -167,7 +167,7 @@ class GameState:
             while len(frontier) > 0:
                 current = frontier.popleft()
                 current_group.add(current)
-                if self._is_near_border(current):
+                if self.is_near_border(current):
                     surrounded = False
                 for near_pos in self.get_near_position(current):
                     near_cell = self.game_field[near_pos]
@@ -211,7 +211,7 @@ class GameState:
     def get_player_by_id(self, player_id: int) -> Player:
         return self._players[player_id - 1]
 
-    def _is_near_border(self, position: Point) -> bool:
+    def is_near_border(self, position: Point) -> bool:
         for near_pos in self.NEAR_POINTS:
             new_point = position + near_pos
             if new_point not in self.game_field:

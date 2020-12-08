@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import sys
 from typing import TYPE_CHECKING
 
 from PyQt5 import QtGui
@@ -88,6 +90,12 @@ class ConfigWindow(QWidget):
         self.close()
 
     def __load_game(self):
+        if not SAVE_PATH.is_file():
+            QMessageBox.question(self,
+                                 'Error',
+                                 'Save file not found or not created',
+                                 QMessageBox.Yes)
+            return
         try:
             with open(SAVE_PATH, 'rb') as file:
                 game_state = pickle.load(file)

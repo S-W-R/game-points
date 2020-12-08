@@ -33,8 +33,24 @@ class GameHelper:
             for cell in self.get_player_cells(enemy):
                 yield cell.position
 
-    def is_enemy_point(self, point: Point, player: Player) -> bool:
+    DIAGONAL_POINTS = (Point(-1, -1), Point(-1, 1), Point(1, -1), Point(1, 1))
+
+    def get_diagonal_points(self, position: Point):
+        for near_pos in self.DIAGONAL_POINTS:
+            new_point = position + near_pos
+            if new_point in self._game_state.game_field:
+                yield new_point
+
+    def is_enemy_or_neutral_point(self, point: Point, player: Player) -> bool:
         return not self.is_ally_point(point, player)
+
+    def is_enemy_point(self, point: Point, player: Player) -> bool:
+        return (not self.is_neutral_point(point) and
+                self.is_enemy_or_neutral_point(point, player))
+
+    def is_neutral_point(self, point: Point):
+        cell = self._game_state.game_field[point]
+        return cell.real_owner == self._game_state.empty_player
 
     def is_ally_point(self, point: Point, player: Player) -> bool:
         cell = self._game_state.game_field[point]
