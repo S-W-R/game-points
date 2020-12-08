@@ -66,6 +66,13 @@ class GameHelper:
             if self._game_state.is_correct_turn(cell.position, player):
                 yield cell.position
 
+    def get_available_neutral_positions(self,
+                                        player: Player) -> Iterable[Point]:
+        for cell in self.get_game_cells():
+            if (self._game_state.is_correct_turn(cell.position, player) and
+                    not self.is_ally_point(cell.position, player)):
+                yield cell.position
+
     def get_game_cells(self) -> Iterable[Cell]:
         game_field = self._game_state.game_field
         for x in range(game_field.width):
@@ -76,5 +83,12 @@ class GameHelper:
         if self._game_state.current_state == rules.CurrentState.ended:
             return False
         for point in self.get_available_positions(player):
+            return True
+        return False
+
+    def is_game_ended(self, player: Player):
+        if self._game_state.current_state == rules.CurrentState.ended:
+            return True
+        for point in self.get_available_neutral_positions(player):
             return True
         return False

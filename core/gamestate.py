@@ -134,7 +134,7 @@ class GameState:
         self._current_state = self._get_current_state()
 
     def _get_current_state(self):
-        if not self.game_helper.is_player_can_make_turn(self._current_player):
+        if not self.game_helper.is_game_ended(self._current_player):
             return rules.CurrentState.ended
         else:
             if self._current_player.controller.is_ai:

@@ -90,6 +90,10 @@ class SimpleAI(Controller):
                 enemy_count += 1
         if enemy_count == 0:
             return 0
+        elif enemy_count == 1:
+            return 1
+        elif enemy_count == 2:
+            return 0.9
         else:
             return 1 / enemy_count
 
@@ -104,10 +108,14 @@ class SimpleAI(Controller):
             if helper.is_ally_point(pos, current_player):
                 near_count += 1
                 near_sum += 1
+            if helper.is_enemy_point(pos, current_player):
+                near_sum -= 0.1
         for pos in helper.get_diagonal_points(point):
             if helper.is_ally_point(pos, current_player):
                 near_count += 1
                 near_sum += 0.5
+            if helper.is_enemy_point(pos, current_player):
+                near_sum -= 0.05
         if near_count == 0:
             return 0
         else:
