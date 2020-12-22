@@ -60,6 +60,7 @@ class ConfigWindow(QWidget):
         layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
         self.setWindowTitle("points game config")
+        #self.setWindowTitle("нильпотентное отчисление")
         self.show()
 
     def __create_score_rule_combobox(self):

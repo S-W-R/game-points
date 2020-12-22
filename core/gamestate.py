@@ -35,44 +35,6 @@ class GameState:
         self._current_state = rules.CurrentState.player_playing
         self._current_state = self._get_current_state()
 
-    def __init_game_field(self, size: Point) -> Matrix[Cell]:
-        game_field = Matrix.from_point(size)
-        for x in range(game_field.width):
-            for y in range(game_field.height):
-                point = Point(x, y)
-                game_field[point] = Cell.create_empty_cell(point)
-        return game_field
-
-    def __apply_initial_position(self,
-                                 initial_position: rules.InitialPosition):
-        first_player_pos = ()
-        second_player_pos = ()
-        central_pos = Point(0, 0)
-        if initial_position == rules.InitialPosition.empty:
-            pass
-        elif initial_position == rules.InitialPosition.cross:
-            if len(self._players) != 2:
-                raise AttributeError()
-            first_player_pos = (Point(0, 0), Point(1, 1))
-            second_player_pos = (Point(0, 1), Point(1, 0))
-            central_pos = Point(self.width // 2 - 1, self.height // 2 - 1)
-        elif initial_position == rules.InitialPosition.double_cross:
-            if len(self._players) != 2:
-                raise AttributeError()
-            first_player_pos = (
-                Point(0, 0), Point(1, 1), Point(2, 1), Point(3, 0))
-            second_player_pos = (
-                Point(0, 1), Point(1, 0), Point(2, 0), Point(3, 1))
-            central_pos = Point(self.width // 2 - 2, self.height // 2 - 1)
-        else:
-            raise AttributeError()
-        for i in first_player_pos:
-            self._activate_cell(self._players[0],
-                                self.game_field[central_pos + i])
-        for i in second_player_pos:
-            self._activate_cell(self._players[1],
-                                self.game_field[central_pos + i])
-
     @property
     def game_field(self) -> Matrix[Cell]:
         return self._game_field
@@ -109,6 +71,46 @@ class GameState:
     def width(self) -> int:
         return self._size.x
 
+    def __init_game_field(self, size: Point) -> Matrix[Cell]:
+        game_field = Matrix.from_point(size)
+        for x in range(game_field.width):
+            for y in range(game_field.height):
+                point = Point(x, y)
+                game_field[point] = Cell.create_empty_cell(point)
+        return game_field
+
+    def __apply_initial_position(self,
+                                 initial_position: rules.InitialPosition):
+        first_player_pos = ()
+        second_player_pos = ()
+        central_pos = Point(0, 0)
+        width = self.width
+        height = self.height
+        if initial_position == rules.InitialPosition.empty:
+            pass
+        elif initial_position == rules.InitialPosition.cross:
+            if len(self.players) != 2:
+                raise AttributeError()
+            first_player_pos = (Point(0, 0), Point(1, 1))
+            second_player_pos = (Point(0, 1), Point(1, 0))
+            central_pos = Point(width // 2 - 1, height // 2 - 1)
+        elif initial_position == rules.InitialPosition.double_cross:
+            if len(self.players) != 2:
+                raise AttributeError()
+            first_player_pos = (
+                Point(0, 0), Point(1, 1), Point(2, 1), Point(3, 0))
+            second_player_pos = (
+                Point(0, 1), Point(1, 0), Point(2, 0), Point(3, 1))
+            central_pos = Point(width // 2 - 2, height // 2 - 1)
+        else:
+            raise AttributeError()
+        for i in first_player_pos:
+            self._activate_cell(self._players[0],
+                                self.game_field[central_pos + i])
+        for i in second_player_pos:
+            self._activate_cell(self._players[1],
+                                self.game_field[central_pos + i])
+
     def get_near_position(self, position: Point) -> Iterable[Point]:
         for near_pos in self.NEAR_POINTS:
             new_point = position + near_pos
@@ -116,20 +118,20 @@ class GameState:
                 yield new_point
 
     def ai_make_turn(self):
+        if self._current_state != rules.CurrentState.ai_playing:
+            raise Exception('Current state must be "ai_playing"')
         player = self._current_player
         controller = player.controller
         position_to_move = controller.get_position(self, player)
         self.make_turn(position=position_to_move, player=player)
-        self._update_turn_is_end()
 
     def player_make_turn(self, position: Point):
-        if (self.try_make_turn(position, self._current_player) and
-                self._current_state == rules.CurrentState.player_playing):
-            self._update_turn_is_end()
+        if self._current_state == rules.CurrentState.player_playing:
+            self.try_make_turn(position, self._current_player)
 
     def _update_turn_is_end(self):
         for player in self._players:
-            player.score = self._get_player_score(player)
+            player.score = self.get_player_score(player)
         self._current_player = self._get_next_player()
         self._current_state = self._get_current_state()
 
@@ -181,6 +183,7 @@ class GameState:
             else:
                 free_cells |= current_group
         self._capture_points(player, surrounded_cells)
+        self._update_turn_is_end()
 
     def is_correct_turn(self, position: Point, player: Player):
         if position not in self.game_field:
@@ -191,7 +194,7 @@ class GameState:
         return (cell_type == CellType.empty or (
                 cell_type == CellType.captured_cell and owner == player))
 
-    def _get_player_score(self, player: Player) -> int:
+    def get_player_score(self, player: Player) -> int:
         counter = 0
         score_rule = rules.SCORE_RULE_FROM_NAME[self.score_rule]
         if score_rule == rules.ScoreRule.russian:
