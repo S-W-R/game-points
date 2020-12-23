@@ -1,13 +1,6 @@
 from enum import Enum, auto
 
-
-class Rule:
-    def __init__(self, name):
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        return self._name
+from const.rule import Rule
 
 
 class ScoreRule(Enum):

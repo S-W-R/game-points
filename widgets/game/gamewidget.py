@@ -10,54 +10,48 @@ from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtWidgets import QWidget
 
 from const import rules
+from const.actions import ActionType
 from entities.celltype import CellType
 from geometry.point import Point
 
 if TYPE_CHECKING:
     from core.gamestate import GameState
+    from widgets.mainwindow import MainWindow
 
 
 class GameWindow(QWidget):
-    MIN_SIZE = QSize(400, 300)
     BACKGROUND_COLOR = QColor(220, 220, 220)
 
-    def __init__(self, game_state: GameState):
+    def __init__(self, game_state: GameState, main_window: MainWindow):
         super().__init__()
         self.game_state = game_state
+        self.main_window = main_window
         self.__init_graphic()
-        self.setMinimumSize(
-            QSize(25 * game_state.width, 25 * game_state.height))
-        # self.setGeometry(400, 400, 400, 400)
 
     def __init_graphic(self):
         self.graphic_label = QtWidgets.QLabel(self)
-        # self.graphic_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.show()
-
-    @staticmethod
-    def min_size():
-        return GameWindow.MIN_SIZE
-
-    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
-        self.update()
 
     def paintEvent(self, a0: QtGui.QPaintEvent) -> None:
         self.draw_game_state()
-        self.update()
 
     def mousePressEvent(self, mouse_event):
         if self.game_state.current_state != rules.CurrentState.player_playing:
             return
-        pos = mouse_event.pos()
-        self.game_state.player_make_turn(self.to_game_coordinates(pos))
+        pos = self.to_game_coordinates(mouse_event.pos())
+        current_player = self.game_state.current_player
+        if self.game_state.is_correct_turn(pos, current_player):
+            self.main_window.update_game_state_with_action(
+                ActionType.player_make_turn)
+            self.game_state.player_make_turn(pos)
+            self.main_window.notify_game_state_changed()
 
     def mouseReleaseEvent(self, mouse_event):
         pass
 
-    def minimumSizeHint(self):
-        return self.min_size()
-
     def draw_game_state(self):
+        self.setMinimumSize(
+            QSize(25 * self.game_state.width, 25 * self.game_state.height))
         size = self.size()
         canvas = QtGui.QPixmap(size)
         painter = QPainter(self.graphic_label)

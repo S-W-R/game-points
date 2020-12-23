@@ -53,7 +53,7 @@ class GameState:
 
     @property
     def current_player(self) -> Player:
-        return self.current_player
+        return self._current_player
 
     @property
     def current_state(self) -> rules.CurrentState:
@@ -70,6 +70,17 @@ class GameState:
     @property
     def width(self) -> int:
         return self._size.x
+
+    def copy_fields_from_another_game_state(self, game_state: GameState):
+        self.score_rule = game_state.score_rule
+        self._size = game_state.size
+        self._empty_player = game_state
+        self._players = game_state.players
+        self._player_cycle = game_state._player_cycle
+        self._current_player = game_state.current_player
+        self._game_field = game_state.game_field
+        self._game_helper = game_state.game_helper
+        self._current_state = game_state.current_state
 
     def __init_game_field(self, size: Point) -> Matrix[Cell]:
         game_field = Matrix.from_point(size)
